@@ -54,67 +54,15 @@ for i in 1:23
     end
 end
 
-#=
-# cons3: each shift is at least 1hr
-for i in 2:22
-    for j in 1:5
-        for k in 1:staff
-            @implies(m, (x[i, j, k] >= 1) => minimum((x[i - 1, j, k] == 1) || (x[i + 1, j, k] == 1)))
-        end
-    end
-end
-=#
+# !!! cons3: each shift is at least 1hr
 
-for j in 1:5
-    for k in 1:staff
-        @implies(m, (x[1, j, k] >= 1) => (x[2, j, k] == 1))
-    end
-end
-
-for j in 1:5
-    for k in 1:staff
-        @implies(m, (x[23, j, k] >= 1) => (x[22, j, k] == 1))
-    end
-end
-
-# cons4: each shift is at most 4hrs
-
-# cons5:
+# !!! cons4: each shift is at most 4hrs
 
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix = Array{Int64}(getvalue(x))
 
-# create assignment dataframe
-assn_df = DataFrame(Time = Array{Int8,1}[],
-                    Mon = Array{Int8,1}[],
-                    Tue = Array{Int8,1}[],
-                    Wed = Array{Int8,1}[],
-                    Thu = Array{Int8,1}[],
-                    Fri = Array{Int8,1}[])
+# create final assignment array
 
-# read all assigned shifts into dataframe
-for k in 1:staff
-    for i in 1:23
-        assn_list
-        for j in 1:5
-            if assn_matrix[i,j,k] == 1
-                push!(assn_df[i,j], k)
-            end
-        end
-    end
-end
-
-for i in 1:23, j in 1:5
-    assn_list = Int8[]
-    for k in 1:staff
-        if assn_matrix[i,j,k] == 1
-            push!(assn_list, k)
-        end
-    end
-    assn_df[i,j] = assn_list
-end
-
-# print assignments
-show(assn_df, allrows = true)
+# flatten 3d matrix into 2d array
