@@ -1,4 +1,5 @@
-using JuMP, GLPKMathProgInterface, DataFrames, Taro, ConditionalJuMP
+using JuMP, GLPKMathProgInterface, DataFrames, Taro
+using IntervalArithmetic, Nullables, ConditionalJuMP
 
 Taro.init()
 
@@ -54,15 +55,50 @@ for i in 1:23
     end
 end
 
-# !!! cons3: each shift is at least 1hr
+# cons3: each shift is at least 1hr
+for i in 2:22
+    for j in 1:5
+        for k in 1:staff
+            @implies(m, (x[i, j, k] >= 1) => (x[i + 1, j, k] == 1))
+        end
+    end
+end
+
+# cons3.1: edge cases
+for j in 1:5
+    for k in 1:staff
+        @implies(m, (x[1, j, k] >= 1) => (x[2, j, k] == 1))
+    end
+end
+
+for j in 1:5
+    for k in 1:staff
+        @implies(m, (x[23, j, k] >= 1) => (x[22, j, k] == 1))
+    end
+end
 
 # !!! cons4: each shift is at most 4hrs
 
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
-assn_matrix = Array{Int64}(getvalue(x))
+assn_matrix_3d = Array{Int64}(getvalue(x))
 
 # create final assignment array
+assn_array_2d = Array{Array{Int64, 1}}(undef, 23, 5)
 
 # flatten 3d matrix into 2d array
+
+for i in 1:23
+    for j in 1:5
+        staff_in_ij = []
+        for k in 1:staff
+            if assn_matrix_3d[i, j, k] == 1
+                push!(staff_in_ij, k)
+            end
+        end
+        assn_array_2d[i, j] = staff_in_ij
+    end
+end
+
+display(assn_array_2d)
