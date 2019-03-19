@@ -1,5 +1,4 @@
 using JuMP, GLPKMathProgInterface, DataFrames, Taro
-using IntervalArithmetic, Nullables, ConditionalJuMP
 
 Taro.init()
 
@@ -59,7 +58,7 @@ end
 for i in 2:22
     for j in 1:5
         for k in 1:staff
-            @implies(m, (x[i, j, k] >= 1) => (x[i + 1, j, k] == 1))
+            @constraint(m, x[i - 1, j, k] + x[i + 1, j, k] >= x[i, j, k])
         end
     end
 end
@@ -67,13 +66,13 @@ end
 # cons3.1: edge cases
 for j in 1:5
     for k in 1:staff
-        @implies(m, (x[1, j, k] >= 1) => (x[2, j, k] == 1))
+        @constraint(m, x[2, j, k] >= x[1, j, k])
     end
 end
 
 for j in 1:5
     for k in 1:staff
-        @implies(m, (x[23, j, k] >= 1) => (x[22, j, k] == 1))
+        @constraint(m, x[22, j, k] >= x[23, j, k])
     end
 end
 
