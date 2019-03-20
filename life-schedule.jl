@@ -76,7 +76,7 @@ for j in 1:5
     end
 end
 
-# !!! cons4: each shift is at most 4hrs
+# !!! cons4: each shift is at most 4hrs (may be unnecessary)
 
 status = solve(m)
 
