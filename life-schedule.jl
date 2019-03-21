@@ -78,7 +78,7 @@ end
 
 # !!! cons4: each shift is at most 4hrs (may be unnecessary)
 
-status = solve(m)
+status = solve(m) # takes about 5 mins
 
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix_3d = Array{Int64}(getvalue(x))
@@ -87,7 +87,6 @@ assn_matrix_3d = Array{Int64}(getvalue(x))
 assn_array_2d = Array{Array{Int64, 1}}(undef, 23, 5)
 
 # flatten 3d matrix into 2d array
-
 for i in 1:23
     for j in 1:5
         staff_in_ij = []
