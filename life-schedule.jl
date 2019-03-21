@@ -2,7 +2,10 @@ using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 Taro.init()
 
+# !!! Work in progress.
+
 # get staff availability tables
+# !!! create a quick script for this in the future
 staff_array = [
     DataFrame(Taro.readxl("availability.xlsx", "availability", "B2:F24", header = false)),
     DataFrame(Taro.readxl("availability.xlsx", "availability", "I2:M24", header = false)),
@@ -99,4 +102,5 @@ for i in 1:23
     end
 end
 
+# !!! write result to a dataframe
 display(assn_array_2d)
