@@ -81,7 +81,7 @@ end
 
 # !!! cons4: each shift is at most 4hrs (may be unnecessary)
 
-status = solve(m) # takes about 5 mins
+status = solve(m) # takes a few seconds
 
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix_3d = Array{Int64}(getvalue(x))
