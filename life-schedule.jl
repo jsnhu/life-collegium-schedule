@@ -47,13 +47,13 @@ for k in 1:staff-1
     @constraint(m, sum(x[i, j, k] for i in 1:23, j in 1:5) == 20)
 end
 
-# cons1.1: Ty = 8 works max 13hrs per week (no min)
+# cons1.1: Ty = 8 works max 13hrs per week
 @constraint(m, sum(x[i, j, 8] for i in 1:23, j in 1:5) <= 26)
 
-# cons2: 1-3 people working at any given time
+# cons2: 1-2 people working at any given time
 for i in 1:23
     for j in 1:5
-        @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 3)
+        @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
     end
 end
 
@@ -81,7 +81,7 @@ end
 
 # !!! cons4: each shift is at most 4hrs (may be unnecessary)
 
-status = solve(m) # takes a few seconds
+status = solve(m) # takes several seconds
 
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix_3d = Array{Int64}(getvalue(x))
