@@ -18,8 +18,9 @@ function numtocol(num)
     return col
 end
 
-# number of staff (!!! grab from Excel sheet)
-staff = 8
+# number of staff (B27 on sheet)
+staff = Integer(getCellValue(getCell(getRow(getSheet(
+            Workbook("availability.xlsx"), "availability"),26),1)))
 
 #=
  get staff availability tables
@@ -35,7 +36,8 @@ for i in 0:staff - 1
                     numtocol(7 * i + 6),
                     "24")
     push!(staff_array,
-    DataFrame(Taro.readxl("availability.xlsx", "availability", range, header = false)))
+    DataFrame(Taro.readxl("availability.xlsx", "availability",
+        range, header = false)))
 end
 
 # create 3D availability array
@@ -57,7 +59,8 @@ m = Model(solver = GLPKSolverMIP())
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
 # maximize preference score sum
-@objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] for i in 1:23, j in 1:5, k in 1:staff))
+@objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k]
+    for i in 1:23, j in 1:5, k in 1:staff))
 
 # constraints
 
