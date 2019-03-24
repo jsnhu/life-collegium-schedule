@@ -4,20 +4,39 @@ Taro.init()
 
 # !!! Work in progress.
 
-# get staff availability tables
-# !!! create a quick script for this in the future
-staff_array = [
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "B2:F24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "I2:M24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "P2:T24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "W2:AA24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "AD2:AH24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "AK2:AO24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "AR2:AV24", header = false)),
-    DataFrame(Taro.readxl("availability.xlsx", "availability", "AY2:BC24", header = false))]
+# index to Excel col string function
+function numtocol(num)
+    col = ""
+    modulo = 1
+    while num > 0
+        modulo = (num - 1) % 26
+        col =   string(
+                    string(Char(modulo + 65)),
+                    col)
+        num = floor((num - modulo) / 26)
+    end
+    return col
+end
 
-# number of staff variable, assume working period remains constant
-staff = length(staff_array)
+# number of staff (!!! grab from Excel sheet)
+staff = 8
+
+#=
+ get staff availability tables
+ top left cell on row 2, bot right cell on row 24
+ each table separated by 7 cells
+=#
+
+staff_array = []
+
+for i in 0:staff - 1
+    range = string( numtocol(7 * i + 2),
+                    "2:",
+                    numtocol(7 * i + 6),
+                    "24")
+    push!(staff_array,
+    DataFrame(Taro.readxl("availability.xlsx", "availability", range, header = false)))
+end
 
 # create 3D availability array
 av_matrix = Array{Int8}(undef, 23, 5, staff)
