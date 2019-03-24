@@ -4,7 +4,9 @@ Taro.init()
 
 # !!! Work in progress.
 
-# index to Excel col string function
+# numtocol
+# Integer (>= 1) -> String
+# converts index to Excel col string, e.g. 1 -> A, 27 -> AA
 function numtocol(num)
     col = ""
     modulo = 1
@@ -69,13 +71,20 @@ for k in 1:staff-1
     @constraint(m, sum(x[i, j, k] for i in 1:23, j in 1:5) == 20)
 end
 
-# cons1.1: Ty = 8 works max 13hrs per week
+# cons1.1: Ty = 8 works max 13hrs per week (no min)
 @constraint(m, sum(x[i, j, 8] for i in 1:23, j in 1:5) <= 26)
 
-# cons2: 1-2 people working at any given time
-for i in 1:23
+# cons2: 1-2 people working at any given time (except opening/closing)
+for i in 2:22
     for j in 1:5
         @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
+    end
+end
+
+# cons2.1: 1 person per opening or closing shift
+for i in [1, 23]
+    for j in 1:5
+        @constraint(m, sum(x[i, j, k] for k in 1:staff) == 1)
     end
 end
 
@@ -103,7 +112,7 @@ end
 
 # !!! cons4: each shift is at most 4hrs (may be unnecessary)
 
-status = solve(m) # takes several seconds
+status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
 assn_matrix_3d = Array{Int64}(getvalue(x))
