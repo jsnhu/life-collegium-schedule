@@ -67,7 +67,7 @@ m = Model(solver = GLPKSolverMIP())
 # constraints
 
 # cons1: each person (except Ty = 8) works 10hrs per week
-for k in 1:staff-1
+for k in 1:staff - 1
     @constraint(m, sum(x[i, j, k] for i in 1:23, j in 1:5) == 20)
 end
 
@@ -80,7 +80,7 @@ end
 for i in 2:22
     for j in 1:5
         if j == 3 && i in 17:19 # (Wed 16:00-17:30)
-            break
+            continue
         else
             @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
         end
