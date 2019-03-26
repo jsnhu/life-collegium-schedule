@@ -144,8 +144,8 @@ for i in 1:23
                 push!(staff_in_ij_names, staff_dict[k])
             end
         end
-        assn_array_2d[i, j] = staff_in_ij
-        assn_array_2d_names[i, j] = staff_in_ij_names
+        assn_array_2d[i, j]         = staff_in_ij
+        assn_array_2d_names[i, j]   = staff_in_ij_names
     end
 end
 
