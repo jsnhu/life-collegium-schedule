@@ -151,3 +151,5 @@ end
 
 # !!! write result to a dataframe
 display(assn_array_2d)
+
+test_df = DataFrame(assn_array_2d_names)
