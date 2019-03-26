@@ -30,16 +30,19 @@ staff = Integer(getCellValue(getCell(getRow(getSheet(
  each table separated by 7 cells
 =#
 
-staff_array = []
+staff_array = []                        # with preference/availability data
+staff_dict  = Dict{Integer, String}()   # with names of staff
 
 for i in 0:staff - 1
-    range = string( numtocol(7 * i + 2),
+    range = string(numtocol(7 * i + 2),
                     "2:",
                     numtocol(7 * i + 6),
                     "24")
     push!(staff_array,
-    DataFrame(Taro.readxl("availability.xlsx", "availability",
+        DataFrame(Taro.readxl("availability.xlsx", "availability",
         range, header = false)))
+    staff_dict[i + 1] = String(getCellValue(getCell(getRow(getSheet(
+        Workbook("availability.xlsx"), "availability"), 0), 7 * i)))
 end
 
 # create 3D availability array
@@ -115,11 +118,6 @@ end
 for j in 1:5
     for k in 1:staff
         @constraint(m, x[2, j, k] >= x[1, j, k])
-    end
-end
-
-for j in 1:5
-    for k in 1:staff
         @constraint(m, x[22, j, k] >= x[23, j, k])
     end
 end
@@ -132,18 +130,22 @@ println("Objective value: ", getobjectivevalue(m))
 assn_matrix_3d = Array{Int64}(getvalue(x))
 
 # create final assignment array
-assn_array_2d = Array{Array{Int64, 1}}(undef, 23, 5)
+assn_array_2d       = Array{Array{Int64, 1}}(undef, 23, 5)
+assn_array_2d_names = Array{Array{String, 1}}(undef, 23, 5)
 
 # flatten 3d matrix into 2d array
 for i in 1:23
     for j in 1:5
-        staff_in_ij = []
+        staff_in_ij         = []
+        staff_in_ij_names   = []
         for k in 1:staff
             if assn_matrix_3d[i, j, k] == 1
                 push!(staff_in_ij, k)
+                push!(staff_in_ij_names, staff_dict[k])
             end
         end
         assn_array_2d[i, j] = staff_in_ij
+        assn_array_2d_names[i, j] = staff_in_ij_names
     end
 end
 
