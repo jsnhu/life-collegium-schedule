@@ -1,4 +1,4 @@
-using JuMP, GLPKMathProgInterface, DataFrames, Taro
+using JuMP, DataFrames, Taro, Gurobi
 
 Taro.init()
 
@@ -57,7 +57,7 @@ for k in 1:staff
 end
 
 # optimization model
-m = Model(solver = GLPKSolverMIP())
+m = Model(solver = GurobiSolver(Presolve = 0))
 
 # 23 x 5 x staff binary assignment 3d matrix
 # 1 if employee k assigned to shift (i,j), 0 otherwise
@@ -65,11 +65,10 @@ m = Model(solver = GLPKSolverMIP())
 
 # test-objective
 # !!! add quadratic objective???
-# anecdotally worse schedule
+
 @objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] +
-    2 * av_matrix[i + 1, j, k] * x[i + 1, j, k] +
-    2 * av_matrix[i - 1, j, k] * x[i + 1, j, k]
-    for i in 2:22, j in 1:5, k in 1:staff))
+    x[i, j, k] * (4 * av_matrix[i + 1, j, k] * x[i + 1, j, k])
+    for i in 1:22, j in 1:5, k in 1:staff))
 
 # constraints
 
