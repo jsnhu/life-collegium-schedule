@@ -64,7 +64,8 @@ m = Model(solver = GurobiSolver(Presolve = 0))
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
 # test-objective
-# !!! add quadratic objective???
+# !!! special case k = 8
+# !!! special case for dummy
 
 @objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] +
     x[i, j, k] * (4 * av_matrix[i + 1, j, k] * x[i + 1, j, k])
@@ -88,7 +89,8 @@ for i in 2:22
         if j == 3 && i in 17:19 # (Wed 16:00-17:30)
             continue
         else
-            @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
+            @constraint(m, sum(x[i, j, k] for k in 1:staff) <= 2)
+            @constraint(m, sum(x[i, j, k] for k in 1:staff) >= 1)
         end
     end
 end
