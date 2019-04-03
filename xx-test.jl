@@ -61,26 +61,26 @@ m = Model(solver = GurobiSolver(Presolve = 0))
 # 1 if employee k assigned to shift (i,j), 0 otherwise
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
-# test-objective
-# !!! special case k = 8
-# !!! special case for dummy
+# continuous shift reward objective`
+# special cases k = 1 (placeholder)
+#               k = 2 (Senior CA)
 
 @objective(m, Max,
     sum(av_matrix[i, j, k] * x[i, j, k] +
         x[i, j, k]  * (4 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
                     +  4 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
-        for i in 2:22, j in 1:5, k in 1:staff - 1)
-    + sum(av_matrix[i, j, 8] * x[i, j, 8] for i in 1:23, j in 1:5))
+        for i in 2:22, j in 1:5, k in 3:staff)
+    + sum(av_matrix[i, j, k] * x[i, j, k] for i in 1:23, j in 1:5, k in 1:2))
 
 # constraints
 
-# cons1: each person (except Ty = 8) works 10hrs per week
-for k in 1:staff - 1
+# cons1: each person (except special cases k = 1,2) works 10hrs per week
+for k in 3:staff
     @constraint(m, sum(x[i, j, k] for i in 1:23, j in 1:5) == 20)
 end
 
-# cons1.1: Ty = 8 works max 13hrs per week (no min)
-@constraint(m, sum(x[i, j, 8] for i in 1:23, j in 1:5) <= 26)
+# cons1.1: senior CA = 2 works max 13hrs per week (no min)
+@constraint(m, sum(x[i, j, 2] for i in 1:23, j in 1:5) <= 26)
 
 # cons2: 1-2 people working at any given time
 #   exceptions: opening/closing
@@ -97,7 +97,7 @@ for i in 2:22
 end
 
 # cons2.1: 1 person per opening or closing shift
-for i in [1, 23]
+for i in [1, 2, 22, 23]
     for j in 1:5
         @constraint(m, sum(x[i, j, k] for k in 1:staff) == 1)
     end
@@ -105,7 +105,7 @@ end
 
 # cons2.2: all CAs attend weekly meeting (Wed 16:00-17:30)
 for i in 17:19
-    for k in 1:staff
+    for k in 2:staff
         @constraint(m, x[i, 3, k] == 1)
     end
 end
