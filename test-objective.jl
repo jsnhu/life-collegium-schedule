@@ -1,4 +1,4 @@
-using JuMP, GLPKMathProgInterface, DataFrames, Taro
+using JuMP, DataFrames, Taro, Gurobi
 
 Taro.init()
 
@@ -24,11 +24,9 @@ end
 staff = Integer(getCellValue(getCell(getRow(getSheet(
             Workbook("availability.xlsx"), "availability"), 26), 1)))
 
-#=
- get staff availability tables
- top left cell on row 2, bot right cell on row 24
- each table separated by 7 cells
-=#
+# get staff availability tables
+# top left cell on row 2, bot right cell on row 24
+# each table separated by 7 cells
 
 staff_array = []                        # with preference/availability data
 staff_dict  = Dict{Integer, String}()   # with names of staff
@@ -57,16 +55,22 @@ for k in 1:staff
 end
 
 # optimization model
-m = Model(solver = GLPKSolverMIP())
+m = Model(solver = GurobiSolver(Presolve = 0))
 
 # 23 x 5 x staff binary assignment 3d matrix
 # 1 if employee k assigned to shift (i,j), 0 otherwise
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
-# maximize preference score sum
-@objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] +
-    2 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
-    for i in 1:22, j in 1:5, k in 1:staff))
+# test-objective
+# !!! special case k = 8
+# !!! special case for dummy
+
+@objective(m, Max,
+    sum(av_matrix[i, j, k] * x[i, j, k] +
+        x[i, j, k]  * (4 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
+                    +  4 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
+        for i in 2:22, j in 1:5, k in 1:staff - 1)
+    + sum(av_matrix[i, j, 8] * x[i, j, 8] for i in 1:23, j in 1:5))
 
 # constraints
 
@@ -86,7 +90,8 @@ for i in 2:22
         if j == 3 && i in 17:19 # (Wed 16:00-17:30)
             continue
         else
-            @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
+            @constraint(m, sum(x[i, j, k] for k in 1:staff) <= 2)
+            @constraint(m, sum(x[i, j, k] for k in 1:staff) >= 1)
         end
     end
 end
@@ -127,7 +132,7 @@ end
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
-assn_matrix_3d = Array{Int64}(getvalue(x))
+assn_matrix_3d = Array{Float64}(getvalue(x))
 
 # create final assignment array
 assn_array_2d       = Array{Array{Int64, 1}}(undef, 23, 5)

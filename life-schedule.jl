@@ -63,7 +63,7 @@ m = Model(solver = GLPKSolverMIP())
 # 1 if employee k assigned to shift (i,j), 0 otherwise
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
-# maximize preference score sum
+# maximize preference score sum + reward
 @objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] +
     2 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
     for i in 1:22, j in 1:5, k in 1:staff))
