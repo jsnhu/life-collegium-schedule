@@ -135,7 +135,7 @@ end
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
-assn_matrix_3d = Array{Float64}(getvalue(x))
+assn_matrix_3d = Array{Int64}(getvalue(x))
 
 # create final assignment array
 assn_array_2d       = Array{Array{Int64, 1}}(undef, 23, 5)
