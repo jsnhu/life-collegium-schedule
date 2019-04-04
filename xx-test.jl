@@ -67,8 +67,8 @@ m = Model(solver = GurobiSolver(Presolve = 0))
 
 @objective(m, Max,
     sum(av_matrix[i, j, k] * x[i, j, k] +
-        x[i, j, k]  * (4 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
-                    +  4 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
+        x[i, j, k]  * (10 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
+                    +  10 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
         for i in 2:22, j in 1:5, k in 3:staff)
     + sum(av_matrix[i, j, k] * x[i, j, k] for i in 1:23, j in 1:5, k in 1:2))
 
@@ -81,6 +81,9 @@ end
 
 # cons1.1: senior CA = 2 works max 13hrs per week (no min)
 @constraint(m, sum(x[i, j, 2] for i in 1:23, j in 1:5) <= 26)
+
+# cons1.2: senior CA = 2 works max 2 opening/closing shifts
+@constraint(m, sum(x[i, j, 2] for i in [1, 23], j in 1:5) <= 2)
 
 # cons2: 1-2 people working at any given time
 #   exceptions: opening/closing
