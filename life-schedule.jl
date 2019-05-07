@@ -184,4 +184,5 @@ Discussion:
     - 30 min shift latching onto the team meeting
         - special case requiring at least one hour shift
         before/after meeting
+    - max 2 opening/closing pp?
 =#
