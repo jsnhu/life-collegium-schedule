@@ -174,3 +174,14 @@ for i in 1:23
 end
 
 write("assn-matrix.xlsx", w)
+
+#=
+Discussion:
+    - better to have continous shift rather than
+    preferred shifts?
+        - change neutrals to 1 and adjust the preferences
+        accordingly
+    - 30 min shift latching onto the team meeting
+        - special case requiring at least one hour shift
+        before/after meeting
+=#
