@@ -1,4 +1,4 @@
-using JuMP, DataFrames, Taro, Gurobi
+using JuMP, GLPKMathProgInterface, DataFrames, Taro
 
 Taro.init()
 
@@ -22,11 +22,13 @@ end
 
 # number of staff (B27 on sheet)
 staff = Integer(getCellValue(getCell(getRow(getSheet(
-            Workbook("availability.xlsx"), "availability"), 27), 2)))
+            Workbook("availability.xlsx"), "availability"), 26), 1)))
 
-# get staff availability tables
-# top left cell on row 2, bot right cell on row 24
-# each table separated by 7 cells
+#=
+ get staff availability tables
+ top left cell on row 2, bot right cell on row 24
+ each table separated by 7 cells
+=#
 
 staff_array = []                        # with preference/availability data
 staff_dict  = Dict{Integer, String}()   # with names of staff
@@ -55,36 +57,26 @@ for k in 1:staff
 end
 
 # optimization model
-m = Model(solver = GurobiSolver(Presolve = 0))
+m = Model(solver = GLPKSolverMIP())
 
 # 23 x 5 x staff binary assignment 3d matrix
 # 1 if employee k assigned to shift (i,j), 0 otherwise
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
-# continuous shift reward objective`
-# special cases k = 1 (placeholder)
-#               k = 2 (Senior CA)
-
-@objective(m, Max,
-    sum(av_matrix[i, j, k] * x[i, j, k] +
-        x[i, j, k]  * (10 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
-                    +  10 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
-        for i in 2:22, j in 1:5, k in 3:staff)
-    # special cases k = 1,2
-    + sum(av_matrix[i, j, k] * x[i, j, k] for i in 1:23, j in 1:5, k in 1:2))
+# maximize preference score sum + reward
+@objective(m, Max, sum(av_matrix[i, j, k] * x[i, j, k] +
+    2 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
+    for i in 1:22, j in 1:5, k in 1:staff))
 
 # constraints
 
-# cons1: each person (except special cases k = 1,2) works 10hrs per week
-for k in 3:staff
+# cons1: each person (except Ty = 8) works 10hrs per week
+for k in 1:staff - 1
     @constraint(m, sum(x[i, j, k] for i in 1:23, j in 1:5) == 20)
 end
 
-# cons1.1: senior CA = 2 works max 13hrs per week (no min)
-@constraint(m, sum(x[i, j, 2] for i in 1:23, j in 1:5) <= 26)
-
-# cons1.2: senior CA = 2 works max 2 opening/closing shifts
-@constraint(m, sum(x[i, j, 2] for i in [1, 23], j in 1:5) <= 2)
+# cons1.1: Ty = 8 works max 13hrs per week (no min)
+@constraint(m, sum(x[i, j, 8] for i in 1:23, j in 1:5) <= 26)
 
 # cons2: 1-2 people working at any given time
 #   exceptions: opening/closing
@@ -94,14 +86,13 @@ for i in 2:22
         if j == 3 && i in 17:19 # (Wed 16:00-17:30)
             continue
         else
-            @constraint(m, sum(x[i, j, k] for k in 1:staff) <= 2)
-            @constraint(m, sum(x[i, j, k] for k in 1:staff) >= 1)
+            @constraint(m, 1 <= sum(x[i, j, k] for k in 1:staff) <= 2)
         end
     end
 end
 
 # cons2.1: 1 person per opening or closing shift
-for i in [1, 2, 22, 23]
+for i in [1, 23]
     for j in 1:5
         @constraint(m, sum(x[i, j, k] for k in 1:staff) == 1)
     end
@@ -109,7 +100,7 @@ end
 
 # cons2.2: all CAs attend weekly meeting (Wed 16:00-17:30)
 for i in 17:19
-    for k in 2:staff
+    for k in 1:staff
         @constraint(m, x[i, 3, k] == 1)
     end
 end
@@ -160,3 +151,5 @@ end
 
 # !!! write result to a dataframe
 display(assn_array_2d)
+
+test_df = DataFrame(assn_array_2d_names)
