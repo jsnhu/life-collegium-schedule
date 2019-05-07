@@ -136,7 +136,7 @@ end
 status = solve(m)
 
 println("Objective value: ", getobjectivevalue(m))
-assn_matrix_3d = Array{Int64}(getvalue(x))
+assn_array_3d = Array{Int64}(getvalue(x))
 
 # create final assignment array
 assn_array_2d       = Array{Array{Int64, 1}}(undef, 23, 5)
@@ -148,7 +148,7 @@ for i in 1:23
         staff_in_ij         = []
         staff_in_ij_names   = []
         for k in 1:staff
-            if assn_matrix_3d[i, j, k] == 1
+            if assn_array_3d[i, j, k] == 1
                 push!(staff_in_ij, k)
                 push!(staff_in_ij_names, staff_dict[k])
             end
