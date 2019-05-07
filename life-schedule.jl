@@ -160,3 +160,17 @@ end
 
 # !!! write result to a dataframe
 display(assn_array_2d)
+
+# create new workbook with assignment matrix
+w = Workbook()
+s = createSheet(w, "Assignments")
+
+for i in 1:23
+    r = createRow(s, i)
+    for j in 1:5, k in 1:staff
+        c = createCell(r, 7 * (k - 1) + j)
+        setCellValue(c, assn_array_3d[i, j, k])
+    end
+end
+
+write("assn-matrix.xlsx", w)
