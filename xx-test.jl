@@ -70,6 +70,7 @@ m = Model(solver = GurobiSolver(Presolve = 0))
         x[i, j, k]  * (10 * av_matrix[i + 1, j, k] * x[i + 1, j, k]
                     +  10 * av_matrix[i - 1, j, k] * x[i - 1, j, k])
         for i in 2:22, j in 1:5, k in 3:staff)
+    # special cases k = 1,2
     + sum(av_matrix[i, j, k] * x[i, j, k] for i in 1:23, j in 1:5, k in 1:2))
 
 # constraints
