@@ -158,7 +158,6 @@ for i in 1:23
     end
 end
 
-# !!! write result to a dataframe
 display(assn_array_2d)
 
 # create new workbook with assignment matrix
@@ -185,4 +184,5 @@ Discussion:
         - special case requiring at least one hour shift
         before/after meeting
     - max 2 opening/closing pp?
+    - reward having different people opening/closing
 =#
