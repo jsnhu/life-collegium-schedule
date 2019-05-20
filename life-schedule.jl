@@ -61,7 +61,7 @@ m = Model(solver = GurobiSolver(Presolve = 0))
 # 1 if employee k assigned to shift (i,j), 0 otherwise
 @variable(m, x[1:23, 1:5, 1:staff], Bin)
 
-# continuous shift reward objective`
+# objective: rewards continuous shifts
 # special cases k = 1 (placeholder)
 #               k = 2 (Senior CA)
 
